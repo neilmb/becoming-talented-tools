@@ -1,0 +1,18 @@
+{
+  "name": "becoming-talented-tools",
+  "version": "1.0.0",
+  "description": "Web-based tools for the exercises in the book Becoming Talented",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@11ty/eleventy": "^2.0.1"
+  }
+}
