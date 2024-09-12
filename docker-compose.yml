@@ -1,0 +1,10 @@
+services:
+  web:
+    image: nginx:mainline
+    build: .
+    volumes:
+      - type: bind
+        source: ./docs
+        target: /usr/share/nginx/html
+    ports:
+      - "8888:80"
