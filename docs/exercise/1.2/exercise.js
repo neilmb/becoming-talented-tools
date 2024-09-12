@@ -1,4 +1,14 @@
+
+function getRandom(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
 class IntervalCycles extends HTMLElement {
+  static observedAttributes = ["interval", "direction", "starting_note"];
+
+  INTERVAL_CHOICES = ["2nds", "3rds", "4ths", "5ths", "6ths", "7ths"];
+  DIRECTION_CHOICES = ["Ascending", "Descending"];
+  STARTING_NOTE_CHOICES = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si"];
 
   constructor() {
     super();
@@ -6,25 +16,46 @@ class IntervalCycles extends HTMLElement {
     this.direction = "Ascending";
     this.starting_note = "Do";
 
-  static get observedAttributes() {
-      return ["interval", "direction", "starting_note"];
   }
 
   attributeChangedCallback(property, oldValue, newValue) {
       if (oldValue === newValue) return;
       this[ property ] = newValue;
-      render();
+      this.render();
   }
 
   // connect component
   connectedCallback() {
     this.attachShadow({ mode: 'open' });
-    render();
+
+    var template_content = `
+      <link rel="stylesheet" href="/css/pico.min.css" />
+      <p><span id="direction"></span> <span id="interval"></span> starting from <span id="starting-note"></span></p>
+      <button>Choose again</button>
+    `;
+
+    this.shadowRoot.innerHTML = template_content;
+
+    this.direction_span = this.shadowRoot.querySelector("span#direction");
+    this.interval_span = this.shadowRoot.querySelector("span#interval");
+    this.starting_note_span = this.shadowRoot.querySelector("span#starting-note");
+
+    this.shadowRoot.querySelector("button").addEventListener("click", this.buttonClicked.bind(this));
+
+    this.render();
   }
 
   render() {
-    template_content = `<p>${this.direction} ${this.interval} starting from ${this.starting_note}</p>`
-    this.shadowRoot.innerHTML = template_content;
+    this.direction_span.textContent = this.direction;
+    this.interval_span.textContent = this.interval;
+    this.starting_note_span.textContent = this.starting_note;
+  }
+
+  buttonClicked(event) {
+    this.direction = getRandom(this.DIRECTION_CHOICES);
+    this.interval =  getRandom(this.INTERVAL_CHOICES);
+    this.starting_note = getRandom(this.STARTING_NOTE_CHOICES);
+    this.render();
   }
 }
 
