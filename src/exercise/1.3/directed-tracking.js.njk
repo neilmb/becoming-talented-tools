@@ -8,12 +8,13 @@ function getRandom(items) {
 
 class DirectedTracking extends HTMLElement {
 
-  INTERVAL_CHOICES = ["2nds", "3rds", "4ths", "5ths", "6ths", "7ths"];
-  DIRECTION_CHOICES = ["Up", "Down"];
+  INTERVAL_CHOICES = ["2nd", "3rd", "4th", "5th", "6th", "7th"];
   NOTE_CHOICES = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si"];
+
 
   constructor() {
     super();
+    this.length = 3;
     this.generateSequence(); // sets this.directions and this.answer
   }
 
@@ -30,7 +31,10 @@ class DirectedTracking extends HTMLElement {
         <p><span id="answer"></span></p>
       </details>
 
-      <button>Choose again</button>
+      <button id="again">Choose again</button>
+      <button id="longer" class="secondary outline">Longer</button>
+      <button id="shorter" class="secondary outline">Shorter</button>
+
     `;
 
     this.shadowRoot.innerHTML = template_content;
@@ -38,7 +42,21 @@ class DirectedTracking extends HTMLElement {
     this.directions_span = this.shadowRoot.querySelector("span#directions");
     this.answer_span = this.shadowRoot.querySelector("span#answer");
 
-    this.shadowRoot.querySelector("button").addEventListener("click", this.buttonClicked.bind(this));
+    this.shadowRoot.querySelector("button#again").addEventListener("click", this.buttonClicked.bind(this));
+    this.shadowRoot.querySelector("button#longer").addEventListener(
+      "click",
+      (e) => {
+        this.length += 1;
+        this.buttonClicked(e)
+      }
+    );
+    this.shadowRoot.querySelector("button#shorter").addEventListener(
+      "click",
+      (e) => {
+        this.length = Math.max(1, this.length -1);
+        this.buttonClicked(e)
+      }
+    );
 
     this.render();
   }
@@ -46,13 +64,33 @@ class DirectedTracking extends HTMLElement {
   render() {
     this.directions_span.textContent = this.directions;
     this.answer_span.textContent = this.answer;
+
+    // disable the shorter button if length is one
+    if (this.length <= 1) {
+      this.shadowRoot.querySelector("button#shorter").setAttribute("disabled", "");
+    } else {
+      this.shadowRoot.querySelector("button#shorter").removeAttribute("disabled");
+    }
   }
 
   generateSequence() {
     // generate a sequence of steps from a starting note and compute the final
     // note
-    this.directions = "Starting from Do go up a 3rd.";
-    this.answer = "Mi";
+    var note_index = Math.floor(Math.random() * this.NOTE_CHOICES.length);
+    this.directions = "Starting from " + this.NOTE_CHOICES[note_index] + " go ";
+    for (let i = 0; i < this.length; i++) {
+      // there are six choices for how big a step to make
+      const interval_index = Math.floor(Math.random() * 6);
+      // and up or down
+      const up_or_down = (Math.random() <= 0.5 ? -1 : 1);
+
+      this.directions += (up_or_down < 0 ? "down " : "up ") + "a " + this.INTERVAL_CHOICES[interval_index] + ", ";
+
+      note_index += up_or_down * (interval_index + 1);
+    }
+    this.answer = this.NOTE_CHOICES[note_index % this.NOTE_CHOICES.length];
+    // take off the last comma
+    this.directions = this.directions.slice(0, -2);
   }
 
   buttonClicked(event) {
