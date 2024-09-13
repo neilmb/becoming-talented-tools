@@ -1,0 +1,103 @@
+---
+permalink: "/exercise/1.3/directed-tracking.js"
+---
+
+function getRandom(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+class DirectedTracking extends HTMLElement {
+
+  INTERVAL_CHOICES = ["2nd", "3rd", "4th", "5th", "6th", "7th"];
+  NOTE_CHOICES = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si"];
+
+
+  constructor() {
+    super();
+    this.length = 3;
+    this.generateSequence(); // sets this.directions and this.answer
+  }
+
+  // connect component
+  connectedCallback() {
+    this.attachShadow({ mode: 'open' });
+
+    var template_content = `
+      <link rel="stylesheet" href={{"/css/pico.min.css" | htmlBaseUrl }} />
+      <p><span id="directions"></span></p>
+
+      <details id="details">
+        <summary>Answer</summary>
+        <p><span id="answer"></span></p>
+      </details>
+
+      <button id="again">Choose again</button>
+      <button id="longer" class="secondary outline">Longer</button>
+      <button id="shorter" class="secondary outline">Shorter</button>
+
+    `;
+
+    this.shadowRoot.innerHTML = template_content;
+
+    this.directions_span = this.shadowRoot.querySelector("span#directions");
+    this.answer_span = this.shadowRoot.querySelector("span#answer");
+
+    this.shadowRoot.querySelector("button#again").addEventListener("click", this.buttonClicked.bind(this));
+    this.shadowRoot.querySelector("button#longer").addEventListener(
+      "click",
+      (e) => {
+        this.length += 1;
+        this.buttonClicked(e)
+      }
+    );
+    this.shadowRoot.querySelector("button#shorter").addEventListener(
+      "click",
+      (e) => {
+        this.length = Math.max(1, this.length -1);
+        this.buttonClicked(e)
+      }
+    );
+
+    this.render();
+  }
+
+  render() {
+    this.directions_span.textContent = this.directions;
+    this.answer_span.textContent = this.answer;
+
+    // disable the shorter button if length is one
+    if (this.length <= 1) {
+      this.shadowRoot.querySelector("button#shorter").setAttribute("disabled", "");
+    } else {
+      this.shadowRoot.querySelector("button#shorter").removeAttribute("disabled");
+    }
+  }
+
+  generateSequence() {
+    // generate a sequence of steps from a starting note and compute the final
+    // note
+    var note_index = Math.floor(Math.random() * this.NOTE_CHOICES.length);
+    this.directions = "Starting from " + this.NOTE_CHOICES[note_index] + " go ";
+    for (let i = 0; i < this.length; i++) {
+      // there are six choices for how big a step to make
+      const interval_index = Math.floor(Math.random() * 6);
+      // and up or down
+      const up_or_down = (Math.random() <= 0.5 ? -1 : 1);
+
+      this.directions += (up_or_down < 0 ? "down " : "up ") + "a " + this.INTERVAL_CHOICES[interval_index] + ", ";
+
+      note_index += up_or_down * (interval_index + 1);
+    }
+    this.answer = this.NOTE_CHOICES[note_index % this.NOTE_CHOICES.length];
+    // take off the last comma
+    this.directions = this.directions.slice(0, -2);
+  }
+
+  buttonClicked(event) {
+    this.shadowRoot.querySelector("#details").removeAttribute("open");
+    this.generateSequence();
+    this.render();
+  }
+}
+
+customElements.define( 'directed-tracking', DirectedTracking );
