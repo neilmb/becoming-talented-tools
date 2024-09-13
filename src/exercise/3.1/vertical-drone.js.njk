@@ -1,0 +1,95 @@
+---
+permalink: "/exercise/3.1/vertical-drone.js"
+---
+
+function getRandom(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+class VerticalDroneIdentification extends HTMLElement {
+
+  PITCHES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+	OCTAVES = ["3", "4", "5"];
+
+	INTERVAL_CHOICES = [2, 4, 5, 7, 9, 11];
+  NOTE_NAMES = ["Re", "Mi", "Fa", "Sol", "La", "Si"];
+
+  constructor() {
+    super();
+
+    this.generateChoices();
+  }
+
+  generateChoices () {
+    this.drone = getRandom(this.PITCHES) + getRandom(this.OCTAVES);
+    this.interval = getRandom(this.INTERVAL_CHOICES);
+  }
+
+	noteAddInterval (note, interval) {
+		// add an number of half steps to a note
+    const pitch = note.slice(0, -1);   // cut off octave
+    // find pitch in PITCHES
+    const pitch_index = this.PITCHES.indexOf(pitch);
+    const new_pitch_index = (pitch_index + interval) % this.PITCHES.length;
+    const new_octave = Number(note.slice(-1)) + Math.floor((pitch_index + interval) / (this.PITCHES.length))
+    return this.PITCHES[new_pitch_index] + `${new_octave}`;
+	}
+
+  scaleDegree(interval) {
+		// the scale degree of an interval
+    return this.INTERVAL_CHOICES.indexOf(interval) + 2;
+	}
+
+  noteName(interval) {
+    // the solfege name of the interval
+    return this.NOTE_NAMES[this.INTERVAL_CHOICES.indexOf(interval)];
+  }
+
+  // connect component
+  connectedCallback() {
+    this.attachShadow({ mode: 'open' });
+
+    var template_content = `
+      <link rel="stylesheet" href={{"/css/pico.min.css" | htmlBaseUrl }} />
+
+      <details id="details">
+        <summary>Answer</summary>
+        <p><span id="answer"></span></p>
+      </details>
+
+      <button id="play">\u23F5 Play</button>
+			<button id="again" class="secondary outline">Choose again</button>
+
+    `;
+
+    this.shadowRoot.innerHTML = template_content;
+
+    this.answer_span = this.shadowRoot.querySelector("span#answer");
+
+    this.shadowRoot.querySelector("button#play").addEventListener("click", this.play.bind(this));
+    this.shadowRoot.querySelector("button#again").addEventListener("click", this.chooseAgain.bind(this));
+
+    this.render();
+  }
+
+  render() {
+    this.answer_span.textContent = `[${this.interval}], ${this.scaleDegree(this.interval)}, ${this.noteName(this.interval)}`;
+  }
+
+  play(event) {
+    // play the tone here
+		Tone.start()
+
+    playNote(this.drone, "1n", "+0");
+
+    playNote(this.noteAddInterval(this.drone, this.interval), "2n.", "+4n");
+  }
+
+  chooseAgain(event) {
+    this.shadowRoot.querySelector("details").removeAttribute("open")
+		this.generateChoices();
+		this.render();
+	}
+}
+
+customElements.define( 'vertical-drone', VerticalDroneIdentification );
