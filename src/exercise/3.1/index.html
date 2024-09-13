@@ -8,18 +8,18 @@ half-step interval, scale degree, or solfége name.</p>
 
 <script src="http://unpkg.com/tone"></script>
 <script>
-			function playNote(pitch, dur, when) {
-				// create a synth
-			const synth = new Tone.MonoSynth({
-				filterEnvelope: {
-						attack: 0.1
-				}
-			}).toDestination();
+      function playNote(pitch, dur, when) {
+        // create a synth
+      const synth = new Tone.MonoSynth({
+        filterEnvelope: {
+            attack: 0.1
+        }
+      }).toDestination();
 
-				// play a note from that synth
-				synth.triggerAttackRelease(pitch, dur, when);
-			}
-		</script>
+        // play a note from that synth
+        synth.triggerAttackRelease(pitch, dur, when);
+      }
+    </script>
 <script type="module" src="./vertical-drone.js"></script>
 
 <div class="exercise-component">
