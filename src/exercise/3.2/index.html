@@ -1,0 +1,27 @@
+---
+layout: base.njk
+title: "Exercise 3.2: Ploger harmonic interval drills"
+---
+
+<p>Two notes play at once. Speak the half-step interval name of the interval
+played.</p>
+
+<script src="https://unpkg.com/tone"></script>
+<script>
+  function playNote(pitch, dur, when) {
+    // create a synth
+    const synth = new Tone.MonoSynth({
+      filterEnvelope: {
+        attack: 0.1
+      }
+    }).toDestination();
+
+    // play a note from that synth
+    synth.triggerAttackRelease(pitch, dur, when);
+  }
+</script>
+<script type="module" src="./harmonic-intervals.js"></script>
+
+<div class="exercise-component">
+  <harmonic-intervals></harmonic-intervals>
+</div>
