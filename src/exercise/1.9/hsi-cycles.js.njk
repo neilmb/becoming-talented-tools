@@ -1,0 +1,61 @@
+---
+permalink: "/exercise/1.9/hsi-cycles.js"
+---
+
+function getRandom(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+class HSICycles extends HTMLElement {
+
+  INTERVAL_CHOICES = Array.from({length: 11}, (_, k) => `[${k+1}]`);
+  DIRECTION_CHOICES = ["Ascending", "Descending"];
+  STARTING_NOTE_CHOICES = ["Do", "Do-sharp", "Re-flat", "Re", "Re-sharp",
+                        "Mi-flat", "Mi", "Fa", "Fa-sharp", "Sol-flat", "Sol",
+                        "Sol-sharp", "La-flat", "La", "La-sharp", "Si-flat", "Si"];
+
+  constructor() {
+    super();
+    this.generateChoices();
+  }
+
+  // connect component
+  connectedCallback() {
+    this.attachShadow({ mode: 'open' });
+
+    var template_content = `
+      <link rel="stylesheet" href={{"/css/pico.min.css" | htmlBaseUrl }} />
+      <p><span id="direction"></span> <span id="interval"></span> starting from <span id="starting-note"></span></p>
+      <button>Choose again</button>
+    `;
+
+    this.shadowRoot.innerHTML = template_content;
+
+    this.direction_span = this.shadowRoot.querySelector("span#direction");
+    this.interval_span = this.shadowRoot.querySelector("span#interval");
+    this.starting_note_span = this.shadowRoot.querySelector("span#starting-note");
+
+    this.shadowRoot.querySelector("button").addEventListener("click", this.buttonClicked.bind(this));
+
+    this.render();
+  }
+
+  render() {
+    this.direction_span.textContent = this.direction;
+    this.interval_span.textContent = this.interval;
+    this.starting_note_span.textContent = this.starting_note;
+  }
+
+  generateChoices() {
+    this.direction = getRandom(this.DIRECTION_CHOICES);
+    this.interval =  getRandom(this.INTERVAL_CHOICES);
+    this.starting_note = getRandom(this.STARTING_NOTE_CHOICES);
+  }
+
+  buttonClicked(event) {
+    this.generateChoices();
+    this.render();
+  }
+}
+
+customElements.define( 'hsi-cycles', HSICycles );
