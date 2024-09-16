@@ -11,9 +11,22 @@
   <body>
     <main class="container">
 
+      {{ '<small><a href="/">Home</a></small>' | safe if page.url != '/' }}
       <h1>{{ title }}</h1>
 
       {{ content | safe }}
     </main>
+
+    <footer class="container">
+      <hr/>
+      <div class="grid">
+        <div>
+          Copyright 2024 Neil Martinsen-Burrell <a href="https://github.com/neilmb">@neilmb</a>
+        </div>
+        <div>
+          <a
+            href="https://github.com/neilmb/becoming-talented-tools/issues/new">Suggest improvements on Github</a>
+        </div>
+    </footer>
   </body>
 </html>
