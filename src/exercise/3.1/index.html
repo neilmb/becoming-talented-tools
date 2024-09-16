@@ -11,9 +11,9 @@ half-step interval, scale degree, or solfége name.</p>
   function playNote(pitch, dur, when) {
     // create a synth
     const synth = new Tone.MonoSynth({
-      filterEnvelope: {
-        attack: 0.1
-      }
+      oscillator: {
+        type: "sine",
+      },
     }).toDestination();
 
     // play a note from that synth
