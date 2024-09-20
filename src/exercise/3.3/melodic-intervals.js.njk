@@ -1,0 +1,155 @@
+---
+permalink: "/exercise/3.3/melodic-intervals.js"
+---
+
+function getRandom(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+class MelodicIntervalIdentification extends HTMLElement {
+
+  PITCHES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+  OCTAVES = ["3", "4"];
+
+  INTERVAL_MODES = {
+    "1": [1, 7],
+    "2": [1, 4],
+    "3": [1, 10],
+    "4": [1, 11],
+    "5": [6, 7],
+    "6": [2, 7],
+    "7": [2, 3],
+    "8": [2, 4],
+    "9": [2, 11],
+    "10": [2, 10],
+    "11": [10, 11],
+    "12": [1, 2],
+    "13": [1, 2, 10, 11],
+    "14": [1, 2, 6, 7],
+    "15": [1, 2, 6, 7, 10, 11],
+    "16": [5, 6, 7],
+  }
+
+  constructor() {
+    super();
+
+    this.generateChoices("1");
+  }
+
+  generateChoices (mode=null) {
+    this.drone = getRandom(this.PITCHES) + getRandom(this.OCTAVES);
+    if (mode == null) {
+      mode = this.mode_selector.querySelector("input:checked").value;
+    }
+    this.interval = getRandom(this.INTERVAL_MODES[mode]);
+  }
+
+  noteAddInterval (note, interval) {
+    // add an number of half steps to a note
+    const pitch = note.slice(0, -1);   // cut off octave
+    // find pitch in PITCHES
+    const pitch_index = this.PITCHES.indexOf(pitch);
+    const new_pitch_index = (pitch_index + interval) % this.PITCHES.length;
+    const new_octave = Number(note.slice(-1)) + Math.floor((pitch_index + interval) / (this.PITCHES.length))
+    return this.PITCHES[new_pitch_index] + `${new_octave}`;
+  }
+
+  // connect component
+  connectedCallback() {
+    this.attachShadow({ mode: 'open' });
+
+    var template_content = `
+      <link rel="stylesheet" href={{"/css/pico.min.css" | htmlBaseUrl }} />
+
+      <details id="details">
+        <summary>Answer</summary>
+        <p><span id="answer"></span></p>
+      </details>
+
+      <button id="play">\u23F5 Play</button>
+      <button id="again" class="secondary outline">\u27f3 Choose again</button>
+
+      <fieldset id="mode-selector">
+        <legend>Possible intervals</legend>
+        <label><input type="radio" name="mode" value="1" checked/>
+        [1], [7]</label>
+
+        <label><input type="radio" name="mode" value="2"/>
+        [1], [4]</label>
+
+        <label><input type="radio" name="mode" value="3"/>
+        [1], [10]</label>
+
+        <label><input type="radio" name="mode" value="4"/>
+        [1], [11]</label>
+
+        <label><input type="radio" name="mode" value="5"/>
+        [6], [7]</label>
+
+        <label><input type="radio" name="mode" value="6"/>
+        [2], [7]</label>
+
+        <label><input type="radio" name="mode" value="7"/>
+        [2], [3]</label>
+
+        <label><input type="radio" name="mode" value="8"/>
+        [2], [4]</label>
+
+        <label><input type="radio" name="mode" value="9"/>
+        [2], [11]</label>
+
+        <label><input type="radio" name="mode" value="10"/>
+        [2], [10]</label>
+
+        <label><input type="radio" name="mode" value="11"/>
+        [10], [11]</label>
+
+        <label><input type="radio" name="mode" value="12"/>
+        [1], [2]</label>
+
+        <label><input type="radio" name="mode" value="13"/>
+        [1], [2], [10], [11]</label>
+
+        <label><input type="radio" name="mode" value="14"/>
+        [1], [2], [6], [7]</label>
+
+        <label><input type="radio" name="mode" value="15"/>
+        [1], [2], [6], [7], [10], [11]</label>
+
+        <label><input type="radio" name="mode" value="16"/>
+        [5], [6], [7]</label>
+      </fieldset>
+
+    `;
+
+    this.shadowRoot.innerHTML = template_content;
+
+    this.answer_span = this.shadowRoot.querySelector("span#answer");
+    this.mode_selector = this.shadowRoot.querySelector("fieldset#mode-selector");
+
+    this.shadowRoot.querySelector("button#play").addEventListener("click", this.play.bind(this));
+    this.shadowRoot.querySelector("button#again").addEventListener("click", this.chooseAgain.bind(this));
+
+    this.render();
+  }
+
+  render() {
+    this.answer_span.textContent = `[${this.interval}]`;
+  }
+
+  play(event) {
+    // play the tone here
+    Tone.start()
+
+    playNote(this.drone, "4n", "+0");
+    playNote(this.noteAddInterval(this.drone, this.interval), "4n", "+4n.");
+  }
+
+  chooseAgain(event) {
+    this.shadowRoot.querySelector("details").removeAttribute("open")
+    this.generateChoices();
+    this.render();
+  }
+}
+
+customElements.define( 'melodic-intervals', MelodicIntervalIdentification );

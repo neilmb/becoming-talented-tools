@@ -1,0 +1,27 @@
+---
+layout: base.njk
+title: "Exercise 3.3: Ploger melodic interval drills"
+---
+
+<p>Two notes play sequentially. Speak the half-step interval name of the interval
+played.</p>
+
+<script src="https://unpkg.com/tone"></script>
+<script>
+  function playNote(pitch, dur, when) {
+    // create a synth
+    const synth = new Tone.MonoSynth({
+      oscillator: {
+        type: "sine",
+      },
+    }).toDestination();
+
+    // play a note from that synth
+    synth.triggerAttackRelease(pitch, dur, when);
+  }
+</script>
+<script type="module" src="./melodic-intervals.js"></script>
+
+<div class="exercise-component">
+  <melodic-intervals></melodic-intervals>
+</div>
