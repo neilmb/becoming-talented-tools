@@ -1,0 +1,161 @@
+---
+permalink: "/exercise/1.7/fifteen-tracking-lines.js"
+---
+
+const SVGNS = "http://www.w3.org/2000/svg";
+
+function getRandom(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+class FifteenTrackingLines extends HTMLElement {
+
+  constructor() {
+    super();
+    this.length = 20;
+    this.generateSequence(1); // sets this.degrees
+  }
+
+  // connect component
+  connectedCallback() {
+    this.attachShadow({ mode: 'open' });
+
+    var template_content = `
+      <link rel="stylesheet" href={{"/css/pico.min.css" | htmlBaseUrl }} />
+
+      <section>
+      <svg id="tracking" width="900" height="300" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-width="1.0" stroke="black"
+         d="
+         M0,10 L900,10
+         M0,30 L900,30
+         M0,50 L900,50
+         M0,70 L900,70
+         M0,90 L900,90
+         M0,110 L900,110
+         M0,130 L900,130
+         M0,150 L900,150
+         M0,170 L900,170
+         M0,190 L900,190
+         M0,210 L900,210
+         M0,230 L900,230
+         M0,250 L900,250
+         M0,270 L900,270
+         M0,90 L900,90
+         " />
+      </svg>
+      </section>
+
+      <section>
+      <button id="again">\u27f3 Choose again</button>
+      <button id="longer" class="secondary outline">Longer</button>
+      <button id="shorter" class="secondary outline">Shorter</button>
+      </section>
+
+      <fieldset id="mode-selector">
+        <legend>Largest interval</legend>
+        <label><input type="radio" name="mode" value="1" checked/>
+        2nds</label>
+
+        <label><input type="radio" name="mode" value="2"/>
+        3rds</label>
+
+        <label><input type="radio" name="mode" value="3"/>
+        4ths</label>
+
+        <label><input type="radio" name="mode" value="4"/>
+        5ths</label>
+
+        <label><input type="radio" name="mode" value="5"/>
+        6ths</label>
+
+        <label><input type="radio" name="mode" value="6"/>
+        7ths</label>
+      </fieldset>
+
+    `;
+
+    this.shadowRoot.innerHTML = template_content;
+
+    this.tracking = this.shadowRoot.getElementById("tracking");
+    this.mode_selector = this.shadowRoot.getElementById("mode-selector");
+
+    this.shadowRoot.querySelector("button#again").addEventListener("click", this.buttonClicked.bind(this));
+    this.shadowRoot.querySelector("button#longer").addEventListener(
+      "click",
+      (e) => {
+        this.length += 5;
+        this.buttonClicked(e)
+      }
+    );
+    this.shadowRoot.querySelector("button#shorter").addEventListener(
+      "click",
+      (e) => {
+        this.length = Math.max(1, this.length -5);
+        this.buttonClicked(e)
+      }
+    );
+
+    this.render();
+  }
+
+  render() {
+    // render this.degrees onto the SVG this.tracking
+    for (var i = 0; i < this.degrees.length; i++) {
+        var note = document.createElementNS(SVGNS, "ellipse");
+        const cx = i*40 + 19;
+        const cy = this.degrees[i]*10;
+        note.setAttribute("cx", cx);
+        note.setAttribute("cy", cy);
+        note.setAttribute("rx", 13);
+        note.setAttribute("ry", 10);
+        note.setAttribute("transform", `rotate(-10, ${cx}, ${cy})`);
+        this.tracking.appendChild(note);
+    }
+
+    // disable the shorter button if length is one
+    if (this.length <= 1) {
+      this.shadowRoot.querySelector("button#shorter").setAttribute("disabled", "");
+    } else {
+      this.shadowRoot.querySelector("button#shorter").removeAttribute("disabled");
+    }
+  }
+
+  generateSequence( max_step=null ) {
+    // generate a sequence of note numbers for the staff (from 1-9)
+    // note
+    this.degrees = [];
+    if (max_step == null) {
+      max_step = Number(this.mode_selector.querySelector("input:checked").value);
+    }
+    const step_sizes = Array.from({length: max_step}, (_, k) => k+1);
+    var current = Math.floor(29 * Math.random());
+    for (var i = 0; i < this.length; i++) {
+      const step_size = getRandom(step_sizes);
+      if (current <= 1) {
+        // only go up
+        current += step_size;
+      } else if (current >= 29) {
+        // only go down
+        current -= step_size;
+      } else {
+        // go up or down
+        current = current + (2 * Math.round(Math.random()) - 1) * step_size;
+      }
+      this.degrees.push(current);
+    }
+  }
+
+  buttonClicked(event) {
+    this.generateSequence();
+    // clear the old notes
+    this.tracking.querySelectorAll("ellipse").forEach(
+      (node, _, __) => {
+        this.tracking.removeChild(node)
+      }
+    );
+    this.render();
+  }
+}
+
+customElements.define( 'fifteen-tracking-lines', FifteenTrackingLines );
